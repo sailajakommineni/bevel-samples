@@ -1,0 +1,85 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: carrierzz-springboot
+  namespace: carrierzz-ns
+  annotations:
+    fluxcd.io/automated: "false"
+spec:
+  releaseName: carrierzz-springboot
+  interval: 1m
+  chart:
+    spec:
+      chart: examples/supplychain-app/charts/springbootwebserver
+      sourceRef:
+        kind: GitRepository
+        name: flux-sai
+        namespace: flux-sai
+  values:
+    nodeName: carrierzz-springboot
+    replicas: 1
+    metadata:
+      namespace: carrierzz-ns
+      type: cordaopensource
+    image:
+      containerName: ghcr.io/hyperledger/bevel-supplychain-corda:springboot-latest
+      initContainerName: ghcr.io/hyperledger/alpine-utils:1.0
+      imagePullSecret: regcred
+      privateCertificate: true
+    smartContract:
+      JAVA_OPTIONS : -Xmx512m
+    volume:
+      mountPath: /opt/corda
+    nodeConf:
+      node: carrierzz
+      nodeRpcPort: 10003
+      nodeRpcAdminPort: 10005
+      controllerName: Controller
+      trustStorePath: /opt/corda/certificates/sslkeystore.jks
+      trustStoreProvider: jks
+      legalName: O=Carrier,OU=Carrier,L=51.50/-0.13/London,C=GB
+      devMode: false
+      useHTTPS: true
+      useSSL: false
+      tlsAlias: cordaclienttls
+      ssl:
+        certificatesDirectory: na-ssl-false
+        sslKeystoreFileName: na-ssl-false
+        ssltruststore: na-ssl-false
+    credentials:
+      rpcUser: carrierzzoperations
+    resources:
+      limits: "512Mi"
+      requests: "512Mi"
+    storage:
+      provisioner: kubernetes.io/aws-ebs
+      memory: 512Mi
+      name: awsstorageclass
+      parameters:
+        type: gp2
+        encrypted: "true"
+      annotations: {}
+    web:
+      targetPort: 20001
+      port: 20001
+    service:
+      type: NodePort
+      annotations: {}
+    networkservices:
+      networkmap: na
+      doorman: na
+    vault:
+      address: "http://vault.internal.dev.aws.blockchaincloudpoc-develop.com:20002"
+      role: vault-role
+      authpath: cordacarrierzz
+      serviceaccountname: vault-auth
+      rpcusersecretprefix: carrierzz/data/credentials/rpcusers
+      keystoresecretprefix: carrierzz/data/credentials/keystore
+      certsecretprefix: carrierzz/data/certs
+    node:
+      readinesscheckinterval: 10
+      readinessthreshold: 15
+    deployment:
+      annotations: {}
+    pvc:
+      annotations: {}
