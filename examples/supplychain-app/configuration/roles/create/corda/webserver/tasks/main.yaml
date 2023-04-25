@@ -5,20 +5,7 @@
 ##############################################################################################
 
 ############################################################################################
-- name: "Check or Wait for node pod to be up"
-  include_role:
-    name: "{{ playbook_dir }}/../../../platforms/shared/configuration/roles/check/helm_component"
-  vars:
-    component_type: "Pod"
-    namespace: "{{ component_ns }}"
-    component_name: "{{ node.name | lower }}"
-    kubernetes: "{{ organization_data.k8s }}"
-    label_selectors:
-      - app = {{ component_name }}
-  loop: "{{ organization_data.services.peers }}"
-  loop_control:
-    loop_var: node
-  when: node.springboot is defined
+
 
 # Create corda webserver value file for the peer nodes
 - name: "Create webserver values file for peer organizations"
@@ -55,6 +42,21 @@
     loop_var: node
   when: node.springboot is defined and network['type'] == 'corda-enterprise'
 
+- name: "Check or Wait for node pod to be up"
+  include_role:
+    name: "{{ playbook_dir }}/../../../platforms/shared/configuration/roles/check/helm_component"
+  vars:
+    component_type: "Pod"
+    namespace: "{{ component_ns }}"
+    component_name: "{{ node.name | lower }}"
+    kubernetes: "{{ organization_data.k8s }}"
+    label_selectors:
+      - app = {{ component_name }}
+  loop: "{{ organization_data.services.peers }}"
+  loop_control:
+    loop_var: node
+  when: node.springboot is defined
+  
 # Push the webserver deployment files to repository
 - name: "Push the created deployment files to repository"
   include_role: 
