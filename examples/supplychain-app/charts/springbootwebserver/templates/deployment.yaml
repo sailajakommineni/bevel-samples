@@ -14,6 +14,7 @@ metadata:
     {{- end }}
     namespace: {{ .Values.metadata.namespace }}
     labels:
+      app: {{ .Values.nodeName }}
       app.kubernetes.io/name: {{ .Values.nodeName }}
       helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
       app.kubernetes.io/managed-by: {{ .Release.Service }}
